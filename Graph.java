@@ -115,7 +115,7 @@ public class Graph {
 		// 	if(dpArray[v][i] != dpArray[v][i-1]) {
 		// 		for() {
 		//
-		// 			if(dpArray[v][i] == A[u][i-1] + adjList.get(endNode)) {
+		// 			if(dpArray[v][i] == A[u][i-1] + adjList.get(endNode).miles) {
 		//
 		// 			}
 		// 		}
