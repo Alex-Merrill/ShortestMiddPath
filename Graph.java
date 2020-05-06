@@ -28,6 +28,7 @@ public class Graph {
 	// Object that contains an adjacency list of a road network, and a dictionary from elements of the list to indices from 0 to |V|-1
 	HashMap<Integer, ArrayList<Road>> adjList;
 	HashMap<Integer,Integer> nodeDict;
+	HashMap<Integer,Integer> nodeDictReverse;
 
 
 	public Graph(String file) throws IOException{
@@ -50,8 +51,7 @@ public class Graph {
 			this.addToList(new Road(Integer.parseInt(temp[61]),Integer.parseInt(temp[60]),temp[9],Double.parseDouble(temp[31])));
 		}
 
-
-		//For dynamic programming, we will have an array with indeces 0 to |V|-1,
+		//For dynamic programming, we will have an array with indices 0 to |V|-1,
 		// where |V| is the number of vertices. Thus we need to associate each element of adjList with a number between 0 and |V|-1
 		// We will use a Dictionary (HashMap) to do this.
 		nodeDict = new HashMap<>();
@@ -60,8 +60,15 @@ public class Graph {
 			nodeDict.put(nodeName, j);
 			j++;
 		}
-	}
 
+		//creates a hashmap that is the inverse of nodeDict, with keys as values and values as keys
+		nodeDictReverse = new HashMap<>();
+		int k = 0;
+		for (Integer nodeName: adjList.keySet()){
+			nodeDictReverse.put(k, nodeName);
+			k++;
+		}
+	}
 
 	// get functions
 	public HashMap<Integer, ArrayList<Road>> getAdjList(){
@@ -90,45 +97,89 @@ public class Graph {
 
     }
 
-    public Double[][] ShortestDistance(Integer startNode){
-    	// This method should create the array storing the objective function values of subproblems used in Bellman Ford.
-		Double[][] dpArray=new Double[1][1];
+	//fills in an array containing the shortest path length from startNode to any
+	//other given node in the graph.
+	//returns array containing the shortest path length from startNode to any
+	//other given node in the graph.
+	public Double[][] ShortestDistance(Integer startNode){
 
+		int vMag = nodeDict.size();
+		Double[][] dpArray = new Double[vMag][vMag];
 
+		//intializes starting node first column with 0
+		int startInd = nodeDict.get(startNode);
+		dpArray[startInd][0] = 0.0;
+
+		//initializes first column with positive infinity
+		for(int i = 0; i <= vMag-1; i++) {
+			if(i != startInd) {
+				dpArray[i][0] = Double.POSITIVE_INFINITY;
+			}
+		}
+
+		//fills in array
+		for(int i = 1; i <= vMag-1; i++) {
+			for(Map.Entry<Integer, ArrayList<Road>> entry : adjList.entrySet()) {
+				Integer key = entry.getKey();
+				ArrayList<Road> roads = entry.getValue();
+				int keyTrans = nodeDict.get(key);
+				dpArray[keyTrans][i] = dpArray[keyTrans][i-1];
+				for(Road r : roads) {
+					Integer node = r.endNode;
+					Integer nodeTrans = nodeDict.get(node);
+					if(dpArray[nodeTrans][i-1] + r.miles < dpArray[keyTrans][i]) {
+						dpArray[keyTrans][i] = dpArray[nodeTrans][i-1] + r.miles;
+					}
+				}
+			}
+		}
 
 		return dpArray;
-    }
+	}
 
+	//works backwards through dpArray to create the shortest path to endNode
+	//from the startNode that dpArray was created with
     public void ShortestPath(Integer endNode, Double[][] dpArray){
-		// This method should work backwards through the array you created in ShortestDistance and output the
-		// sequence of streets you should take to get from your starting point to your ending point.
+
 		ArrayList<String> path = new ArrayList<String>();
 
-		if(dpArray[endNode.intValue()][dpArray[endNode.intValue()].length-1] == Integer.MAX_VALUE) {
+		//translates endNode to index for dpArray
+		//checks if a path was found
+		Integer endNTrans = nodeDict.get(endNode);
+		int vMag = nodeDict.size();
+		if(dpArray[endNTrans][vMag-1] == Double.POSITIVE_INFINITY) {
 			System.out.println("No path found");
 		}
 
-		int i = dpArray[endNode.intValue()].length-1;
-		int v = endNode.intValue();
-
-		// while(i > 0) {
-		// 	if(dpArray[v][i] != dpArray[v][i-1]) {
-		// 		for() {
-		//
-		// 			if(dpArray[v][i] == A[u][i-1] + adjList.get(endNode).miles) {
-		//
-		// 			}
-		// 		}
-		// 	}
-		// 	i--;
-		// }
-
-		for(String rName : path) {
-			System.out.println(rName);
+		//works backwards through dpArray to get shortest path
+		int i = vMag - 1;
+		int v = endNTrans;
+		while(i > 0) {
+			if(dpArray[v][i] != dpArray[v][i-1]) {
+				Integer nodeVal = nodeDictReverse.get(v);
+				ArrayList<Road> roads = adjList.get(nodeVal);
+				for(Road r : roads) {
+					//System.out.println("v: " + v + " u: " + nodeDict.get(r.endNode));
+					Integer u = nodeDict.get(r.endNode);
+					if(dpArray[v][i] == dpArray[u][i-1] + r.miles) {
+						path.add(0, r.name);
+						v = u;
+						break;
+					}
+				}
+			}
+			i--;
 		}
 
+		//prints the path that was found
+		for(int k = 0; k < path.size(); k++) {
+			if(k != path.size() - 1) {
+				System.out.print(path.get(k) + ", ");
+			} else {
+				System.out.print(path.get(k) + ".");
+			}
 
+		}
 	}
-
 
 }

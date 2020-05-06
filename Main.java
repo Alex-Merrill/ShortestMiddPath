@@ -24,7 +24,6 @@ import java.io.File;
 
 public class Main {
 
-
 	public static void main(String[] args) throws IOException{
 
 		// The following creates an adjacency list data structure that stores the vertices and edges in the graph
@@ -36,9 +35,8 @@ public class Main {
 		Double[][] dpArray = graph.ShortestDistance(53980);
 
 		System.out.println("You should take the following walking route to get from 75 Shannon to Green Peppers:");
-		graph.ShortestPath(30783,dpArray);
+		graph.ShortestPath(30783, dpArray);
 
 	}
-
 
 }
