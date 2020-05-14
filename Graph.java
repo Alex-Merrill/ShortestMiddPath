@@ -159,7 +159,6 @@ public class Graph {
 				Integer nodeVal = nodeDictReverse.get(v);
 				ArrayList<Road> roads = adjList.get(nodeVal);
 				for(Road r : roads) {
-					//System.out.println("v: " + v + " u: " + nodeDict.get(r.endNode));
 					Integer u = nodeDict.get(r.endNode);
 					if(dpArray[v][i] == dpArray[u][i-1] + r.miles) {
 						path.add(0, r.name);
